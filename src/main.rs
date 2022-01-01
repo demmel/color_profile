@@ -163,7 +163,7 @@ fn main() {
                     top: 50%;
                     margin-left: -1px;
                     margin-top: -20px; 
-                    transform: rotate({}deg) translate(100px) rotate(90deg); 
+                    transform: rotate({}deg) translate(94px) rotate(90deg); 
                   ",
                   hue as f32,
                 ))) {

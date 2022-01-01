@@ -1,7 +1,10 @@
 use std::collections::VecDeque;
 
 use css_style::{
-  color::palette::{FromColor, Hsl, Srgb},
+  color::{
+    named::BLACK,
+    palette::{FromColor, Hsl, Srgb},
+  },
   prelude::*,
   unit::px,
 };
@@ -94,23 +97,26 @@ fn main() {
           h1 { "Color Profile" }
           (cloned!(color =>if let Some(h) = *hue.get() {
             view! {
-            h2 { "What color is this?"}
-            div(style=(style()
-              .and_size(|c| c.width(px(300)).height(px(300)))
-              .and_background(|c| {
-                c.color(Srgb::from_color(Hsl::new(h as f32, 1.0, 0.5)))
-              })
-            ))
-            div {
-              ColorButtons(ColorButtonsProps {
-                color_signal: color
-              })
-            }
+              h2(style="margin-top: 16px;") { "What color is this?"}
+              div(style="margin-top: 16px; display: flex; flex-direction: row;") {
+                div(style=(style()
+                  .and_size(|c| c.width(px(300)).height(px(300)))
+                  .and_background(|c| {
+                    c.color(Srgb::from_color(Hsl::new(h as f32, 1.0, 0.5)))
+                  })
+                  .and_border(|c| c.double().width(px(8)).color(BLACK))
+                ))
+                div {
+                  ColorButtons(ColorButtonsProps {
+                    color_signal: color
+                  })
+                }
+              }
             }
           } else {
             view!{}
           }))
-          div(style="width: 360px; display: flex; flex-direction: row") {
+          div(style="margin-top: 16px; width: 360px; display: flex; flex-direction: row") {
             Keyed(KeyedProps {
               iterable: profile.handle(),
               template: |(hue, color)| view! {
@@ -150,27 +156,37 @@ fn color_buttons(
   ColorButtonsProps { color_signal }: ColorButtonsProps,
 ) -> View<G> {
   let disabled = color_signal.get().is_some();
-  View::new_fragment(
-    Color::variants()
-      .into_iter()
-      .map(|color| {
-        view! {
-          button(
-            disabled=disabled,
-            on:click=cloned!(color_signal => move |_| {
-              color_signal.set(Some(color))
-            })
-          ) {
-            div(style=(style()
-              .and_size(|c| c.width(px(10)).height(px(10)))
-              .and_background(|c| {
-                c.color(color.color())
-              })
-            ))
-            (color.label())
-          }
-        }
-      })
-      .collect(),
-  )
+  view! {
+    div(style="position: relative; width: 300px; height: 300px; border-radius: 50%;") {
+      (View::new_fragment(
+        Color::variants()
+          .into_iter()
+          .enumerate()
+          .map(|(i, color)| {
+            view! {
+              button(
+                style=(format!(
+                  "width: 75px; height: 24px; position: absolute; left: 50%; top: 50%; transform: rotate({}deg) translate(100px) rotate(-{}deg); display: flex; flex-direction: row;",
+                  (i as f32 / Color::variant_count() as f32) * 360.0,
+                  (i as f32 / Color::variant_count() as f32) * 360.0
+                )),
+                disabled=disabled,
+                on:click=cloned!(color_signal => move |_| {
+                  color_signal.set(Some(color))
+                })
+              ) {
+                div(style=(style()
+                  .and_size(|c| c.width(px(10)).height(px(10)))
+                  .and_background(|c| {
+                    c.color(color.color())
+                  })
+                ))
+                (color.label())
+              }
+            }
+          })
+          .collect(),
+      ))
+    }
+  }
 }

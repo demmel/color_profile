@@ -52,8 +52,8 @@ fn main() {
   let profile: Signal<Vec<(_, Option<Color>)>> =
     Signal::new((0..360).map(|h| (h, None)).collect());
   let color = Signal::new(None);
-  let hue = Signal::new(Some(0));
-  let queue = Signal::new(VecDeque::from(vec![(0, 360)]));
+  let hue = Signal::new(Some((0, (0, 360))));
+  let queue = Signal::new(VecDeque::new());
 
   create_effect(cloned!(profile, hue, queue, color => move || {
     let c = if let Some(c) = *color.get() {
@@ -72,22 +72,34 @@ fn main() {
     let mut q = (*queue.get()).clone();
     let mut p = (*profile.get()).clone();
 
-    p[h] = (h, Some(c));
-    profile.set(p);
+    p[h.0].1 = Some(c);
+
+    let mut maybe_fill_or_queue = |low: usize, high: usize| {
+      let lm = low % 360;
+      let hm = high % 360;
+      let lv = p[lm].1;
+      let hv = p[hm].1;
+      if lm != hm && lv.is_some() && lv == hv  {
+        for p in p.iter_mut().take(high).skip(low) {
+          p.1 = Some(c);
+        }
+      } else if (high - low) > 1 {
+        q.push_back((low,high));
+      }
+    };
+
+    maybe_fill_or_queue(h.1.0, h.0);
+    maybe_fill_or_queue(h.0, h.1.1);
 
     if let Some((low, high)) = q.pop_front() {
       let mid = (low + high) / 2;
-      hue.set(Some(mid));
-      if (mid - low) > 1 {
-        q.push_back((low,mid));
-      }
-      if (high - mid) > 1 {
-        q.push_back((mid,high));
-      }
-      queue.set(q);
+      hue.set(Some((mid, (low,high))));
     } else {
       hue.set(None)
     }
+
+    queue.set(q);
+    profile.set(p);
   }));
 
   sycamore::render(|| {
@@ -102,7 +114,7 @@ fn main() {
                 div(style=(style()
                   .and_size(|c| c.width(px(300)).height(px(300)))
                   .and_background(|c| {
-                    c.color(Srgb::from_color(Hsl::new(h as f32, 1.0, 0.5)))
+                    c.color(Srgb::from_color(Hsl::new(h.0 as f32, 1.0, 0.5)))
                   })
                   .and_border(|c| c.double().width(px(8)).color(BLACK))
                 ))

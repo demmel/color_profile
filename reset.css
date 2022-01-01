@@ -87,12 +87,20 @@ video {
   vertical-align: baseline;
 }
 
+body {
+  background-color: #dddddd;
+}
+
 h1 {
-  font-size: 4em;
+  font-size: 3em;
 }
 
 h2 {
-  font-size: 3em;
+  font-size: 2em;
+}
+
+h3 {
+  font-size: 1.5em;
 }
 
 /* HTML5 display-role reset for older browsers */

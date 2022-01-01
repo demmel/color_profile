@@ -105,18 +105,27 @@ fn main() {
   sycamore::render(|| {
     view! {
       div(style="display: flex; align-items: center; justify-content: center;") {
-        div(style="max-width: 1000px; min-width: 800px; display: flex; flex-direction: column") {
-          h1 { "Color Profile" }
+        div(style="display: flex; flex-direction: column") {
+          h1(style="margin-top: 16px;") { "Color Profile" }
           (cloned!(color =>if let Some(h) = *hue.get() {
             view! {
-              h2(style="margin-top: 16px;") { "What color is this?"}
-              div(style="margin-top: 16px; display: flex; flex-direction: row;") {
+              h3(style="margin-top: 16px;") { "What color is this?"}
+              div(style="
+                margin-top: 4px; 
+                display: flex; 
+                flex-direction: row; 
+                border: solid 1px #cccccc;
+                background-color: #fdfdfd;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0px 2px 4px #bbbbbb;
+              ") {
                 div(style=(style()
                   .and_size(|c| c.width(px(300)).height(px(300)))
                   .and_background(|c| {
                     c.color(Srgb::from_color(Hsl::new(h.0 as f32, 1.0, 0.5)))
                   })
-                  .and_border(|c| c.double().width(px(8)).color(BLACK))
+                  .and_border(|c| c.and_right(|c| c.solid().width(px(1)).color(BLACK)))
                 ))
                 div {
                   ColorButtons(ColorButtonsProps {
@@ -128,23 +137,45 @@ fn main() {
           } else {
             view!{}
           }))
-          div(style="margin-top: 16px; width: 360px; display: flex; flex-direction: row") {
+          h3(style="margin-top: 16px;") { "Your Color Profile"}
+          div(style="
+            margin-top: 4px; 
+            border: solid 1px #cccccc;
+            position: relative; 
+            width: 300px; 
+            height: 300px; 
+            background-color: #fdfdfd;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px #bbbbbb;
+          ") {
             Keyed(KeyedProps {
               iterable: profile.handle(),
               template: |(hue, color)| view! {
-                div(style="display: flex; flex-direction: column") {
+                div(style=(format!(
+                  "
+                    width: 2px; 
+                    height: 40px; 
+                    position: absolute; 
+                    left: 50%; 
+                    top: 50%;
+                    margin-left: -1px;
+                    margin-top: -20px; 
+                    transform: rotate({}deg) translate(100px) rotate(90deg); 
+                  ",
+                  hue as f32,
+                ))) {
                   div(style=(style()
-                    .and_size(|c| c.width(px(1)).height(px(20)))
+                    .and_size(|c| c.width(px(2)).height(px(20)))
                     .and_background(|c| {
                       c.color(Srgb::from_color(Hsl::new(hue as f32, 1.0, 0.5)))
                     })
                   ))
                   div(style=(style()
-                    .and_size(|c| c.width(px(1)).height(px(20)))
+                    .and_size(|c| c.width(px(2)).height(px(20)))
                     .and_background(|c| {
                       c.color(color
                         .map(|c| c.color())
-                        .unwrap_or_else(|| Srgb::new(255, 255, 255))
+                        .unwrap_or_else(|| Srgb::new(253, 253, 253))
                       )
                     })
                   ))
@@ -169,7 +200,13 @@ fn color_buttons(
 ) -> View<G> {
   let disabled = color_signal.get().is_some();
   view! {
-    div(style="position: relative; width: 300px; height: 300px; border-radius: 50%;") {
+    div(style=
+      "
+        position: relative; 
+        width: 300px; 
+        height: 300px; 
+      "
+    ) {
       (View::new_fragment(
         Color::variants()
           .into_iter()
@@ -178,7 +215,18 @@ fn color_buttons(
             view! {
               button(
                 style=(format!(
-                  "width: 75px; height: 24px; position: absolute; left: 50%; top: 50%; transform: rotate({}deg) translate(100px) rotate(-{}deg); display: flex; flex-direction: row;",
+                  "
+                    width: 64px; 
+                    height: 24px; 
+                    position: absolute; 
+                    left: 50%; 
+                    top: 50%; 
+                    transform: rotate({}deg) translate(100px) rotate(-{}deg); 
+                    display: flex; 
+                    flex-direction: row;
+                    margin-left: -32px;
+                    margin-top: -12px; 
+                  ",
                   (i as f32 / Color::variant_count() as f32) * 360.0,
                   (i as f32 / Color::variant_count() as f32) * 360.0
                 )),
@@ -187,12 +235,6 @@ fn color_buttons(
                   color_signal.set(Some(color))
                 })
               ) {
-                div(style=(style()
-                  .and_size(|c| c.width(px(10)).height(px(10)))
-                  .and_background(|c| {
-                    c.color(color.color())
-                  })
-                ))
                 (color.label())
               }
             }

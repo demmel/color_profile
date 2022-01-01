@@ -19,6 +19,7 @@ enum Color {
   Green,
   Cyan,
   Blue,
+  Purple,
   Magenta,
 }
 
@@ -31,6 +32,7 @@ impl Color {
       Color::Green => "Green",
       Color::Cyan => "Cyan",
       Color::Blue => "Blue",
+      Color::Purple => "Purple",
       Color::Magenta => "Magenta",
     }
   }
@@ -43,6 +45,7 @@ impl Color {
       Color::Green => Srgb::new(0, 255, 0),
       Color::Cyan => Srgb::new(0, 255, 255),
       Color::Blue => Srgb::new(0, 0, 255),
+      Color::Purple => Srgb::new(127, 0, 255),
       Color::Magenta => Srgb::new(255, 0, 255),
     }
   }
